@@ -1,36 +1,4 @@
-import { useState } from "react"
-import taskApi from "./api/taskApi"
-
-const TaskForm = () => {
-    const [newTask, setNewTask] = useState({
-        title: '',
-        description: ''
-    })
-
-    const setTitle = (e) => {
-        const _title = e.target.value;
-        setNewTask({
-            ...newTask,
-            title: _title
-        })
-        console.log(newTask)
-    }
-
-    const setDescription = ({target}) => {
-        const _description = target.value;
-        setNewTask({
-            ...newTask,
-            description: _description
-        })
-        console.log(newTask);
-    }
-    
-    const createTask = async () => {
-        console.log(newTask)
-        const taskJson = JSON.stringify(newTask);
-        const _newTask = await taskApi.post('/', newTask);
-        console.log(_newTask);
-    }
+const TaskForm = ({newTask, setToAddNewTask, createNewTask}) => {
 
     return(
         <div className="bg-pink-100 rounded-lg shadow-md p-6 mb-6 w-full max-w-md">
@@ -42,12 +10,15 @@ const TaskForm = () => {
             <input
                 type="text"
                 id="title"
-                onChange={setTitle}
+                onChange={(e) => setToAddNewTask({
+                    ...newTask,
+                    title: e.target.value
+                })}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-pink-300 focus:border-pink-500"
             />
         </div>
         <button
-            onClick={createTask}
+            onClick={() => createNewTask()}
             className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full sm:w-auto mt-2 sm:mt-0"
         >
             Agregar
@@ -61,12 +32,18 @@ const TaskForm = () => {
             <textarea
                 id="description"
                 placeholder="Opcional"
-                onChange={setDescription}
+                onChange={(e) => setToAddNewTask({
+                    ...newTask,
+                    description: e.target.value
+                })}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-pink-300 focus:border-pink-500"
             />
         </div>
         <button
-            onClick={() => { /* Lógica para cancelar: limpiar inputs, quizás ocultar formulario */ }}
+            onClick={() => setToAddNewTask({
+                ...newTask,
+                addNewTask: false
+            })}
             className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full sm:w-auto mt-2 sm:mt-0"
         >
             Cancelar

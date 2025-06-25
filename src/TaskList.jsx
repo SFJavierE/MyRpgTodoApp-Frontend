@@ -1,180 +1,122 @@
 import { useEffect, useState } from "react";
-import taskApi from "./api/taskApi";
+import { useSelector, useDispatch } from 'react-redux';
 import TaskForm from "./TaskForm";
+import TaskItem from "./TaskItem";
+import { getTasks, createTask, updateTask, deleteTask } from "./store/features/tasks";
 
 const TaskList = () => {
-    const [taskList, setTaskList] = useState([])
-    const [updateTask, setUpdateTask] = useState({
+    const { value: tasks, status, error } = useSelector((state) => state.task); 
+    const dispatch = useDispatch();
+
+    const [selectedTaskToUpdate, setTaskToUpdate] = useState({
         update: false,
-        id: ''
-    })
-    const [taskToUpdate, setTaskToUpdate] = useState({
+        id: '',
         title: '',
         description: ''
     })
-    const [addNewTask, setIfAddNewTask] = useState(false)
 
-    const fetchList = async () => {
-        try{
-            const res = await taskApi.get('/');
-            console.log(res.data);
-            setTaskList(res.data);
+    const [newTask, setToAddNewTask] = useState({
+        addNewTask: false,
+        title: '',
+        description: ''
+    })
+
+    const createNewTask = () => {
+        const task = {
+            title: newTask.title,
+            description: newTask.description
         }
-        catch{
-
-        }
-    }
-
-    const deleteItem = async (id) => {
-        try{
-            const res = await taskApi.delete(`/${id}`);
-            let oldTaskList = taskList;
-            let newTaskList = oldTaskList.filter((task)=> (task._id != id))
-            setTaskList(newTaskList);
-        }
-        catch{
-
-        }
-    }
-
-    const updateItem = async (id) => {
-        try{
-            const res = await taskApi.put(`/${id}`, taskToUpdate);
-            let index = taskList.findIndex((task) => task._id == id);
-            let list = taskList;
-            list[index] = res.data;
-            setTaskList(list);
-            setUpdateTask({update: false, id: ''});
-            setTaskToUpdate({title: '', description: ''});
-        }
-        catch{
-
-        }
-    }
-
-    const setTitle = (e) => {
-        setTaskToUpdate({
-            ...taskToUpdate,
-            title: e.target.value
+        dispatch(createTask(task));
+        setToAddNewTask({
+            addNewTask: false,
+            title: '',
+            description: ''
         })
     }
+    
+    const updateSelectedTask = () => {
+        const {id, title, description} = selectedTaskToUpdate;
 
-    const setDescription = (e) => {
+        const taskEdited = {
+            id,
+            taskToUpdate: {
+                title,
+                description 
+            }
+        }
+        dispatch(updateTask(taskEdited));
         setTaskToUpdate({
-            ...taskToUpdate,
-            description: e.target.value
+            update: false,
+            id: '',
+            title: '',
+            description: ''
         })
     }
-
-    const startToUpdate = (id, title, description) => {
-        setUpdateTask({update: true, id});
-        setTaskToUpdate({title, description});
-    }
-
-    const cancelUpdate = () => {
-        setUpdateTask({update: false, id: ''});
-        setTaskToUpdate({title: '', description: ''});
+    
+    const deleteSelectedTask = (id) => {
+        dispatch(deleteTask(id))
     }
 
     useEffect(() => {
-        fetchList();
-    }, [])
+        // Dispatch getTasks only if status is idle, to prevent multiple fetches
+        if (status === 'idle') { 
+            dispatch(getTasks());
+        }
+    }, [dispatch, status]); // Include dispatch and status in dependencies
 
-    return(
-        <ul>
-            {
-                !!taskList.length &&
-                taskList.map(({_id, title, description, completed}) => (
-                    <li key={_id} className=" 
-                        flex flex-col sm:flex-row
-                        items-start sm:items-center
-                        justify-between p-4
-                        border-b border-pink-300
-                        last:border-b-0
-                        bg-pink-100
-                        hover:bg-pink-200
-                        rounded-lg shadow-md mb-3">
-                        {updateTask.update && updateTask.id === _id ? (
-                            <div className="flex flex-col w-full sm:w-3/4 mb-4 sm:mb-0">
-                                <input
-                                    type="text"
-                                    placeholder={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full p-2 border border-pink-400 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-600 text-lg mb-2 text-gray-800"
-                                />
-                            <textarea
-                                name="description"
-                                id={`description-${_id}`}
-                                cols="30"
-                                rows="3"
-                                placeholder={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full p-2 border border-pink-400 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-600 text-base text-gray-800"
-                            ></textarea>
-                        </div>
-                        ) : (
-                            <div className="flex flex-col w-full">
-                                <div className="flex flex-grow justify-between text-sm text-gray-700">
-                                    <p className={`text-xl text-start font-semibold mb-1 ${completed ? 'line-through text-pink-500' : 'text-gray-800'}`}>
-                                        {title}
-                                    </p>
-                                    <div className="flex items-center justify-end">
-                                        <p className="mr-2">Completada:</p>
-                                        <input
-                                            type="checkbox"
-                                            checked={completed}
-                                            onChange={() => { /* Manejar el cambio de estado de completado */ }}
-                                            className="form-checkbox h-5 w-5 text-pink-600 rounded border-pink-400 focus:ring-pink-600"
-                                        />
-                                    </div>
-                                </div>
-                                <p className={`flex-grow text-gray-700 text-start mb-3 ${completed ? 'line-through text-pink-500' : ''}`}>
-                                    {description}
-                                </p>
-                            </div>
-                        )}
-                        <div className="flex flex-col gap-2 mt-4 sm:mt-0 sm:ml-4">
-                            <button
-                                onClick={() => updateTask.update && updateTask.id === _id ? updateItem(_id) : startToUpdate(_id, title, description)}
-                                className={`
-                                    font-bold py-2 px-4 rounded-md transition-colors duration-200 ease-in-out
-                                    ${updateTask.update && updateTask.id === _id
-                                        ? ' bg-green-500 hover:bg-green-600 text-white'
-                                        : ' bg-pink-600 hover:bg-pink-700 text-white'
-                                    }
-                                    w-full sm:w-auto
-                                `}
-                            >
-                                {updateTask.update && updateTask.id === _id ? 'Guardar' : 'Actualizar'}
-                            </button>
-                            <button
-                                onClick={() => updateTask.update && updateTask.id === _id ? cancelUpdate() : deleteItem(_id)}
-                                className=
-                                    {`bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md
-                                    transition-colors duration-200 ease-in-out
-                                    w-full sm:w-auto
-                                    ${updateTask.update && updateTask.id === _id
-                                        ? ' bg-green-500 hover:bg-green-600 text-white'
-                                        : ' bg-pink-600 hover:bg-pink-700 text-white'
-                                    }`}
-                            >
-                                {updateTask.update && updateTask.id === _id ? 'Cancelar' : 'Eliminar'}
-                            </button>
-                        </div>
-                    </li>
-                    ))
+    return (
+        <div>
+            {/* Display loading state */}
+            {status === 'loading' && <p>Cargando tareas...</p>}
+
+            {/* Display error state - SAFELY RENDERING ERROR */}
+            {status === 'failed' && (
+                <p style={{ color: 'red' }}>
+                    Error al cargar las tareas: {error && error.message ? error.message : JSON.stringify(error || 'Error desconocido')}
+                </p>
+            )}
+            
+            {/* Display tasks if succeeded and tasks exist */}
+            {status === 'succeeded' && tasks.length > 0 ? (
+                tasks.map(({_id, title, description, completed}) => {
+                    return(
+                    <div key={_id}>
+                        <TaskItem 
+                        id={_id}
+                        title={title}
+                        description={description}
+                        completed={completed} 
+                        selectedTaskToUpdate={selectedTaskToUpdate} 
+                        setTaskToUpdate={setTaskToUpdate} 
+                        updateSelectedTask={updateSelectedTask}
+                        deleteSelectedTask={deleteSelectedTask}
+                        />
+                    </div>
+                )})
+            ) : (
+                // Display message if no tasks after successful load and not adding new task
+                status === 'succeeded' && !newTask.addNewTask && <p>No hay tareas disponibles. ¡Agrega una!</p>
+            )}
+
+            <div>
+                {
+                    !newTask.addNewTask ?  
+                    <button onClick={() => setToAddNewTask({
+                        ...newTask,
+                        addNewTask: true
+                    })}>
+                        Agregar
+                    </button> :
+                    <TaskForm
+                        newTask= {newTask}
+                        setToAddNewTask= {setToAddNewTask}
+                        createNewTask= {createNewTask
+                        }
+                    /> 
                 }
-                <li>
-                    {
-                        !addNewTask ?   
-                        <button onClick={() => setIfAddNewTask(true)}>
-                            Agregar
-                        </button> :
-                        <TaskForm/>
-                    }
-                </li>
-        </ul>
-    )
+            </div>
+        </div>
+    );
 }
 
 export default TaskList;
