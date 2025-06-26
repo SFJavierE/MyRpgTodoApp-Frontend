@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concepto RPG-To-Do</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            max-width: min(90vw, 1400px);
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .app-card {
+                flex-direction: row;
+            }
+        }
+
+        /* Selector de Tema Flotante (Contenedor principal del banner) */
+        #theme-container {
+            position: fixed; /* Permanece en el viewport incluso al hacer scroll */
+            top: 20px; /* Separación del top */
+            right: 20px; /* CAMBIO: Separación de la derecha */
+            z-index: 1000; /* Asegura que esté encima de otros elementos */
+            background-color: rgba(60, 60, 60, 0.85); /* Fondo oscuro semitransparente para el banner */
+            padding: 15px; /* Relleno interno para dar efecto de banner */
+            border-radius: 15px; /* Bordes redondeados del banner */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Sombra para el banner */
+            backdrop-filter: blur(8px); /* Efecto de desenfoque detrás del banner */
+            display: flex;
+            flex-direction: column; /* Apila el texto y los botones */
+            align-items: center; /* Centra los elementos horizontalmente dentro del banner */
+        }
+        #theme-container p { /* Estilo para el texto "Temas" dentro del banner */
+            color: #ffffff; /* Color blanco del texto */
+            font-size: 0.9rem; /* Tamaño de fuente */
+            font-weight: 600; /* Negrita */
+            margin-bottom: 10px; /* Espacio debajo del texto */
+        }
+
+        /* Contenedor de los botones de tema */
+        #theme-selector {
+            display: flex;
+            flex-direction: column; /* Apila los botones de color */
+            gap: 10px; /* Espacio entre los botones de color */
+        }
+
+        /* Estilos base para los botones individuales de tema */
+        .theme-button {
+            width: 35px; /* Tamaño de los botones */
+            height: 35px;
+            border-radius: 50%; /* Circular */
+            cursor: pointer; /* Cursor de puntero al pasar por encima */
+            border: 3px solid transparent; /* Borde inicial transparente */
+            transition: border-color 0.2s ease-in-out, transform 0.2s ease-in-out; /* Transiciones suaves */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para cada botón */
+        }
+        .theme-button.active {
+            border-color: #f7fafc; /* Borde blanco para el tema activo */
+            transform: scale(1.1); /* Ligeramente más grande para el tema activo */
+        }
+
+        /* Clases específicas para cada tema (Traducción de @apply a CSS estándar) */
+
+        /* Pink Theme - Default */
+        .theme-pink .bg-panel-light { background-color: #fdf2f8; } /* bg-pink-50 */
+        .theme-pink .bg-panel-dark { background-color: #fbcfe8; } /* bg-pink-200 */
+        .theme-pink .border-primary { border-color: #f9a8d4; } /* border-pink-300 */
+        .theme-pink .bg-card { background-color: #ffffff; } /* bg-white */
+        .theme-pink .hover-bg-card:hover { background-color: #fce7f6; } /* hover:bg-pink-100 */
+        .theme-pink .text-primary { color: #db2777; } /* text-pink-600 */
+        .theme-pink .text-secondary { color: #ec4899; } /* text-pink-500 */
+        .theme-pink .bg-form { background-color: #fce7f6; } /* bg-pink-100 */
+        .theme-pink .border-form { border-color: #fbcfe8; } /* border-pink-200 */
+        .theme-pink .text-form-title { color: #be185d; } /* text-pink-700 */
+        .theme-pink .border-input { border-color: #f9a8d4; } /* border-pink-300 */
+        .theme-pink .focus-ring-input:focus { box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.5); /* focus:ring-pink-500 */ }
+        .theme-pink .bg-button-primary { background-color: #db2777; } /* bg-pink-600 */
+        .theme-pink .hover-bg-button-primary:hover { background-color: #be185d; } /* hover:bg-pink-700 */
+        .theme-pink .bg-progress { background-color: #ec4899; } /* bg-pink-500 */
+        .theme-pink .text-stat { color: #be185d; } /* text-pink-700 */
+        .theme-pink .border-stat-card { border-color: #f9a8d4; } /* border-pink-300 */
+        .theme-pink .bg-stat-card { background-color: #fce7f6; } /* bg-pink-100 */
+        .theme-pink .text-level { color: #9d174d; } /* text-pink-800 */
+        .theme-pink .border-avatar { border-color: #ec4899; } /* border-pink-500 */
+        .theme-pink .bg-avatar { background-color: #f472b6; } /* bg-pink-300 */
+        .theme-pink .text-avatar-icon { color: #ec4899; } /* text-pink-500 */
+        .theme-pink .text-completed { color: #db2777; } /* text-pink-600 */
+        .theme-pink .checkbox-color { color: #be185d; } /* text-pink-700 */
+        .theme-pink .checkbox-border-color { border-color: #f472b6; } /* border-pink-400 */
+        .theme-pink .focus-ring-checkbox:focus { box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.5); /* focus:ring-pink-600 */ }
+
+
+        /* Blue Theme */
+        .theme-blue .bg-panel-light { background-color: #eff6ff; } /* bg-blue-50 */
+        .theme-blue .bg-panel-dark { background-color: #bfdbfe; } /* bg-blue-200 */
+        .theme-blue .border-primary { border-color: #93c5fd; } /* border-blue-300 */
+        .theme-blue .bg-card { background-color: #ffffff; } /* bg-white */
+        .theme-blue .hover-bg-card:hover { background-color: #e0f2fe; } /* hover:bg-blue-100 */
+        .theme-blue .text-primary { color: #2563eb; } /* text-blue-600 */
+        .theme-blue .text-secondary { color: #3b82f6; } /* text-blue-500 */
+        .theme-blue .bg-form { background-color: #e0f2fe; } /* bg-blue-100 */
+        .theme-blue .border-form { border-color: #bfdbfe; } /* border-blue-200 */
+        .theme-blue .text-form-title { color: #1e40af; } /* text-blue-700 */
+        .theme-blue .border-input { border-color: #93c5fd; } /* border-blue-300 */
+        .theme-blue .focus-ring-input:focus { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); }
+        .theme-blue .bg-button-primary { background-color: #2563eb; } /* bg-blue-600 */
+        .theme-blue .hover-bg-button-primary:hover { background-color: #1e40af; } /* hover:bg-blue-700 */
+        .theme-blue .bg-progress { background-color: #3b82f6; } /* bg-blue-500 */
+        .theme-blue .text-stat { color: #1e40af; } /* text-blue-700 */
+        .theme-blue .border-stat-card { border-color: #93c5fd; } /* border-blue-300 */
+        .theme-blue .bg-stat-card { background-color: #e0f2fe; } /* bg-blue-100 */
+        .theme-blue .text-level { color: #1e3a8a; } /* text-blue-800 */
+        .theme-blue .border-avatar { border-color: #3b82f6; } /* border-blue-500 */
+        .theme-blue .bg-avatar { background-color: #93c5fd; } /* bg-blue-300 */
+        .theme-blue .text-avatar-icon { color: #3b82f6; } /* text-blue-500 */
+        .theme-blue .text-completed { color: #2563eb; } /* text-blue-600 */
+        .theme-blue .checkbox-color { color: #1e40af; } /* text-blue-700 */
+        .theme-blue .checkbox-border-color { border-color: #60a5fa; } /* border-blue-400 */
+        .theme-blue .focus-ring-checkbox:focus { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5); }
+
+
+        /* Green Theme */
+        .theme-green .bg-panel-light { background-color: #f0fdf4; } /* bg-green-50 */
+        .theme-green .bg-panel-dark { background-color: #bbf7d0; } /* bg-green-200 */
+        .theme-green .border-primary { border-color: #86efac; } /* border-green-300 */
+        .theme-green .bg-card { background-color: #ffffff; } /* bg-white */
+        .theme-green .hover-bg-card:hover { background-color: #dcfce7; } /* hover:bg-green-100 */
+        .theme-green .text-primary { color: #16a34a; } /* text-green-600 */
+        .theme-green .text-secondary { color: #22c55e; } /* text-green-500 */
+        .theme-green .bg-form { background-color: #dcfce7; } /* bg-green-100 */
+        .theme-green .border-form { border-color: #bbf7d0; } /* border-green-200 */
+        .theme-green .text-form-title { color: #14532d; } /* text-green-700 */
+        .theme-green .border-input { border-color: #86efac; } /* border-green-300 */
+        .theme-green .focus-ring-input:focus { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5); }
+        .theme-green .bg-button-primary { background-color: #16a34a; } /* bg-green-600 */
+        .theme-green .hover-bg-button-primary:hover { background-color: #14532d; } /* hover:bg-green-700 */
+        .theme-green .bg-progress { background-color: #22c55e; } /* bg-green-500 */
+        .theme-green .text-stat { color: #14532d; } /* text-green-700 */
+        .theme-green .border-stat-card { border-color: #86efac; } /* border-green-300 */
+        .theme-green .bg-stat-card { background-color: #dcfce7; } /* bg-green-100 */
+        .theme-green .text-level { color: #0f4024; } /* text-green-800 */
+        .theme-green .border-avatar { border-color: #22c55e; } /* border-green-500 */
+        .theme-green .bg-avatar { background-color: #86efac; } /* bg-green-300 */
+        .theme-green .text-avatar-icon { color: #22c55e; } /* text-green-500 */
+        .theme-green .text-completed { color: #16a34a; } /* text-green-600 */
+        .theme-green .checkbox-color { color: #14532d; } /* text-green-700 */
+        .theme-green .checkbox-border-color { border-color: #4ade80; } /* border-green-400 */
+        .theme-green .focus-ring-checkbox:focus { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5); }
+    </style>
+</head>
+<body class="theme-pink" id="app-body">
+    <!-- Banner y Selector de Tema Flotante -->
+    <div id="theme-container">
+        <p>Temas</p>
+        <div id="theme-selector">
+            <button class="theme-button bg-pink-500 active" onclick="setTheme('pink')"></button>
+            <button class="theme-button bg-blue-500" onclick="setTheme('blue')"></button>
+            <button class="theme-button bg-green-500" onclick="setTheme('green')"></button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="app-card">
+            <!-- Panel Izquierdo: Lista de Tareas -->
+            <div id="left-panel" class="w-full md:w-1/2 p-6 md:p-10 bg-panel-light rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none flex flex-col">
+                <h2 class="text-4xl font-extrabold text-gray-800 mb-8 text-center md:text-left">Mis Quests</h2>
+
+                <!-- Lista de tareas -->
+                <ul class="flex-grow space-y-4 mb-8">
+                    <!-- Tarea 1: Completada -->
+                    <li class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border border-primary bg-card hover-bg-card rounded-xl shadow-md">
+                        <div class="flex flex-col w-full">
+                            <p class="text-xl font-bold mb-1 line-through text-primary text-completed">Completar la misión diaria</p>
+                            <p class="text-gray-600 mb-3 line-through text-secondary text-completed">Derrotar 5 enemigos en la zona prohibida.</p>
+                            <!-- No timer for completed tasks -->
+                            <div class="flex items-center justify-end text-sm text-gray-700 mt-2 sm:mt-0">
+                                <p class="mr-2 text-primary font-semibold text-completed">¡Completada!</p>
+                                <input type="checkbox" checked class="form-checkbox h-6 w-6 checkbox-color rounded-full checkbox-border-color focus-ring-checkbox cursor-not-allowed opacity-75"/>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:ml-6">
+                            <button class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Eliminar</button>
+                            <button class="bg-button-primary hover-bg-button-primary text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Actualizar</button>
+                        </div>
+                    </li>
+
+                    <!-- Tarea 2: Pendiente con Timer -->
+                    <li class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border border-primary bg-card hover-bg-card rounded-xl shadow-md">
+                        <div class="flex flex-col w-full">
+                            <p class="text-xl font-bold mb-1 text-gray-800">Forjar una nueva arma</p>
+                            <p class="text-gray-700 mb-3">Recolectar 10 lingotes de hierro y 3 esencias elementales.</p>
+                            <!-- CAMBIO: Contenedor para timer y checkbox -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full text-sm mt-2 sm:mt-0">
+                                <!-- Timer on the left -->
+                                <div class="flex items-center text-gray-700 mb-2 sm:mb-0">
+                                    <span class="font-semibold mr-1">Tiempo restante:</span>
+                                    <span class="font-bold text-red-500">01:23:45</span> <!-- Mock timer value -->
+                                </div>
+                                <!-- Checkbox on the right -->
+                                <div class="flex items-center text-gray-700">
+                                    <p class="mr-2">Completada:</p>
+                                    <input type="checkbox" class="form-checkbox h-6 w-6 checkbox-color rounded-full checkbox-border-color focus-ring-checkbox"/>
+                                </div>
+                            </div>
+                            <!-- NOTA: La lógica para el decrecimiento y eliminación del tiempo se implementaría en React/JS. -->
+                        </div>
+                        <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:ml-6">
+                            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Eliminar</button>
+                            <button class="bg-button-primary hover-bg-button-primary text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Actualizar</button>
+                        </div>
+                    </li>
+
+                     <!-- Tarea 3: Pendiente con Timer -->
+                     <li class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border border-primary bg-card hover-bg-card rounded-xl shadow-md">
+                        <div class="flex flex-col w-full">
+                            <p class="text-xl font-bold mb-1 text-gray-800">Explorar la Mazmorra del Dolor</p>
+                            <p class="text-gray-700 mb-3">Encontrar el Amuleto de la Verdad en el nivel 3.</p>
+                            <!-- CAMBIO: Contenedor para timer y checkbox -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full text-sm mt-2 sm:mt-0">
+                                <!-- Timer on the left -->
+                                <div class="flex items-center text-gray-700 mb-2 sm:mb-0">
+                                    <span class="font-semibold mr-1">Tiempo restante:</span>
+                                    <span class="font-bold text-red-500">00:30:10</span> <!-- Mock timer value -->
+                                </div>
+                                <!-- Checkbox on the right -->
+                                <div class="flex items-center text-gray-700">
+                                    <p class="mr-2">Completada:</p>
+                                    <input type="checkbox" class="form-checkbox h-6 w-6 checkbox-color rounded-full checkbox-border-color focus-ring-checkbox"/>
+                                </div>
+                            </div>
+                            <!-- NOTA: La lógica para el decrecimiento y eliminación del tiempo se implementaría en React/JS. -->
+                        </div>
+                        <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:ml-6">
+                            <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Eliminar</button>
+                            <button class="bg-button-primary hover-bg-button-primary text-white font-bold py-2.5 px-5 rounded-lg transition-all duration-200 w-full sm:w-auto">Actualizar</button>
+                        </div>
+                    </li>
+                </ul>
+
+                <!-- Botón para mostrar el formulario de añadir tarea -->
+                <div class="flex justify-start mt-6 mb-4">
+                    <button class="bg-button-primary hover-bg-button-primary text-white font-bold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 text-xl">
+                        + Nueva Misión
+                    </button>
+                </div>
+
+                <!-- Formulario de nueva tarea (se mostraría condicionalmente) -->
+                <div class="bg-form rounded-xl shadow-lg p-5 border border-form">
+                    <h3 class="text-2xl font-semibold text-form-title mb-4">Nueva Misión</h3>
+                    <div class="mb-4">
+                        <label for="new-title" class="block text-gray-700 text-base font-bold mb-2">Título de la Misión</label>
+                        <input type="text" id="new-title" placeholder="Ej: Derrotar al Dragón Oscuro"
+                               class="shadow-inner appearance-none border border-input rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus-ring-input"/>
+                    </div>
+                    <div class="mb-6">
+                        <label for="new-description" class="block text-gray-700 text-base font-bold mb-2">Detalles (Opcional)</label>
+                        <textarea id="new-description" placeholder="Ej: Se encuentra en la Cueva de las Sombras..." rows="3"
+                                  class="shadow-inner appearance-none border border-input rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus-ring-input"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2.5 px-5 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">
+                            Cancelar
+                        </button>
+                        <button class="bg-button-primary hover-bg-button-primary text-white font-bold py-2.5 px-5 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">
+                            Añadir Quest
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Personaje y Estadísticas RPG -->
+            <div id="right-panel" class="w-full md:w-1/2 p-6 md:p-10 bg-panel-dark rounded-b-3xl md:rounded-r-3xl md:rounded-bl-none flex flex-col items-center text-center">
+                <h2 class="text-4xl font-extrabold text-gray-800 mb-8">Tu Héroe de Quest</h2>
+
+                <!-- Imagen del Personaje (Placeholder) -->
+                <div class="w-36 h-36 md:w-48 md:h-48 bg-avatar rounded-full flex items-center justify-center mb-8 border-4 border-avatar shadow-xl overflow-hidden">
+                    [Image of Personaje RPG]
+                </div>
+
+                <!-- Nombre y Nivel -->
+                <p class="text-3xl font-bold text-gray-900 mb-3">Sir Taskalot</p>
+                <p class="text-xl text-gray-700 mb-10">Nivel: <span class="font-bold text-level">5</span> (XP: 120/200)</p>
+
+                <!-- Estadísticas -->
+                <div class="w-full max-w-sm bg-stat-card border border-stat-card rounded-xl p-5 space-y-4 shadow-inner">
+                    <div class="flex justify-between items-center text-xl text-gray-800">
+                        <span>💪 Fuerza:</span>
+                        <span class="font-bold text-stat">10</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xl text-gray-800">
+                        <span>🧠 Inteligencia:</span>
+                        <span class="font-bold text-stat">15</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xl text-gray-800">
+                        <span>❤️ Resistencia:</span>
+                        <span class="font-bold text-stat">8 <span class="text-green-500 ml-3 animate-pulse text-2xl">&#9650;</span></span>
+                    </div>
+                    <div class="flex justify-between items-center text-xl text-gray-800">
+                        <span>✨ Carisma:</span>
+                        <span class="font-bold text-stat">12</span>
+                    </div>
+                </div>
+
+                <!-- Barra de Progreso -->
+                <div class="w-full max-w-sm mt-10">
+                    <div class="text-base font-medium text-gray-700 mb-2 flex justify-between">
+                        <span>Progreso General de Aventuras</span>
+                        <span>75%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3.5">
+                        <div class="bg-progress h-3.5 rounded-full shadow-inner" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para cambiar el tema
+        function setTheme(themeName) {
+            const body = document.getElementById('app-body');
+            // Remueve todas las clases de tema existentes
+            body.classList.remove('theme-pink', 'theme-blue', 'theme-green');
+            // Añade la nueva clase de tema
+            body.classList.add(`theme-${themeName}`);
+
+            // Actualiza el estado activo de los botones del selector
+            document.querySelectorAll('.theme-button').forEach(button => {
+                if (button.onclick.toString().includes(`setTheme('${themeName}')`)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
