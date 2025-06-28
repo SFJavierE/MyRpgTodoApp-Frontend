@@ -1,55 +1,42 @@
 const TaskForm = ({newTask, setToAddNewTask, createNewTask}) => {
 
     return(
-        <div className="bg-pink-100 rounded-lg shadow-md p-6 mb-6 w-full max-w-md">
-    <div className="flex flex-col sm:flex-row items-start sm:items-center mb-4 gap-3">
-        <div className="flex-grow w-full">
-            <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">
-                Título
-            </label>
-            <input
-                type="text"
-                id="title"
+        <div class="bg-form rounded-xl shadow-lg p-5 border border-form">
+            <h3 class="text-2xl font-semibold text-form-title mb-4">Nueva Misión</h3>
+            <div class="mb-4">
+                <label for="new-title" class="block text-gray-700 text-base font-bold mb-2">Título de la Misión</label>
+                <input 
                 onChange={(e) => setToAddNewTask({
                     ...newTask,
                     title: e.target.value
                 })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-pink-300 focus:border-pink-500"
-            />
-        </div>
-        <button
-            onClick={() => createNewTask()}
-            className="bg-pink-500 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full sm:w-auto mt-2 sm:mt-0"
-        >
-            Agregar
-        </button>
-    </div>
-    <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 gap-3">
-        <div className="flex-grow w-full">
-            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">
-                Descripción
-            </label>
-            <textarea
-                id="description"
-                placeholder="Opcional"
+                type="text" id="new-title" placeholder="Ej: Derrotar al Dragón Oscuro"
+                        class="shadow-inner appearance-none border border-input rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus-ring-input"/>
+            </div>
+            <div class="mb-6">
+                <label for="new-description" class="block text-gray-700 text-base font-bold mb-2">Detalles (Opcional)</label>
+                <textarea 
                 onChange={(e) => setToAddNewTask({
                     ...newTask,
                     description: e.target.value
                 })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline border-pink-300 focus:border-pink-500"
-            />
+                id="new-description" placeholder="Ej: Se encuentra en la Cueva de las Sombras..." rows="3"
+                            class="shadow-inner appearance-none border border-input rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus-ring-input"></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button
+                onClick={() => setToAddNewTask({
+                    ...newTask,
+                    addNewTask: false
+                })}
+                class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2.5 px-5 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">
+                    Cancelar
+                </button>
+                <button onClick={() => createNewTask()} class="bg-button-primary hover-bg-button-primary text-white font-bold py-2.5 px-5 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">
+                    Añadir Quest
+                </button>
+            </div>
         </div>
-        <button
-            onClick={() => setToAddNewTask({
-                ...newTask,
-                addNewTask: false
-            })}
-            className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full sm:w-auto mt-2 sm:mt-0"
-        >
-            Cancelar
-        </button>
-    </div>
-</div>
     )
 }
 

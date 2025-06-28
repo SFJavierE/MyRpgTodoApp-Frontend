@@ -65,7 +65,7 @@ const TaskList = () => {
     }, [dispatch, status]); // Include dispatch and status in dependencies
 
     return (
-        <div>
+        <ul className="">
             {/* Display loading state */}
             {status === 'loading' && <p>Cargando tareas...</p>}
 
@@ -80,8 +80,8 @@ const TaskList = () => {
             {status === 'succeeded' && tasks.length > 0 ? (
                 tasks.map(({_id, title, description, completed}) => {
                     return(
-                    <div key={_id}>
-                        <TaskItem 
+                        <TaskItem
+                        key={_id}
                         id={_id}
                         title={title}
                         description={description}
@@ -91,7 +91,6 @@ const TaskList = () => {
                         updateSelectedTask={updateSelectedTask}
                         deleteSelectedTask={deleteSelectedTask}
                         />
-                    </div>
                 )})
             ) : (
                 // Display message if no tasks after successful load and not adding new task
@@ -115,7 +114,7 @@ const TaskList = () => {
                     /> 
                 }
             </div>
-        </div>
+        </ul>
     );
 }
 
